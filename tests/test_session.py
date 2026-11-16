@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "google_maps_session" / "app"))
 from cookies import netscape, atomic_write
 from server import SessionManager
+from settings import valid_email, read_options
 
 spec = importlib.util.spec_from_file_location("bridge_sync", ROOT / "google_maps_session/bridge/sync.py")
 bridge = importlib.util.module_from_spec(spec)
@@ -26,6 +27,11 @@ def cookie(**kwargs):
 
 
 class CookieTests(unittest.TestCase):
+    def test_email_validation(self):
+        self.assertTrue(valid_email("  user@example.com  "))
+        for value in (None, "", "user", "@example.com", "user@", "user @example.com", "u@a@b"):
+            self.assertFalse(valid_email(value))
+
     def test_netscape_roundtrip_and_domain_filter(self):
         text = netscape([cookie(), cookie(domain="evilgoogle.com", value="EXCLUDE"),
                          cookie(name="SID", expires=-1), cookie(name="expired", expires=1)])
@@ -45,6 +51,27 @@ class CookieTests(unittest.TestCase):
 
 
 class WorkerTests(unittest.IsolatedAsyncioTestCase):
+    async def test_empty_email_keeps_panel_available_without_browser_or_ha_call(self):
+        m = self.make_manager()
+        m.options["email"] = ""
+        await m.sync()
+        self.assertEqual(m.status["state"], "configuration_required")
+        m.browser_json.assert_not_called()
+        m.ha.assert_not_called()
+
+    async def test_reads_saved_email_after_start_and_retries(self):
+        m = self.make_manager()
+        with tempfile.TemporaryDirectory() as temp, patch("server.EXPORT", Path(temp)/"cookies.txt"):
+            options = Path(temp)/"options.json"
+            m.options_path = options
+            options.write_text(json.dumps({"email": ""}))
+            await m.sync()
+            self.assertEqual(m.status["state"], "configuration_required")
+            options.write_text(json.dumps({"email": "  saved@example.com  "}))
+            await m.sync()
+            self.assertEqual(m.status["state"], "ok")
+            m.ha.assert_awaited_with("google_maps_session_bridge/sync", {"email": "saved@example.com"})
+
     def make_manager(self):
         m = SessionManager(None, {"email": "test@example.com", "refresh_minutes": 30})
         m.browser_json = AsyncMock(return_value={"webSocketDebuggerUrl": "ws://localhost"})

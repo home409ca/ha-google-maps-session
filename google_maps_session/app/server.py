@@ -8,14 +8,16 @@ from urllib.parse import urlparse
 
 from aiohttp import ClientSession, ClientTimeout, web
 from cookies import atomic_write, fingerprint, netscape
+from settings import read_options, valid_email
 
 EXPORT = Path("/share/google_maps_session/cookies.txt")
 
 
 class SessionManager:
-    def __init__(self, client, options):
+    def __init__(self, client, options, options_path=None):
         self.client = client
         self.options = options
+        self.options_path = options_path
         self.lock = asyncio.Lock()
         self.last_hash = None
         self.last_validation = 0
@@ -67,6 +69,15 @@ class SessionManager:
     async def sync(self, force=False):
         async with self.lock:
             try:
+                if self.options_path is not None:
+                    updated = await asyncio.to_thread(read_options, self.options_path)
+                    if updated["email"] != self.options["email"]:
+                        self.last_hash = None
+                    self.options = updated
+                    self.status["email"] = updated["email"]
+                if not valid_email(self.options.get("email")):
+                    self.status.update(state="configuration_required", message="Ustaw adres email w zakładce Konfiguracja dodatku i kliknij Zapisz. Następnie naciśnij Przekaż sesję teraz. Przeglądarka działa niezależnie od tego ustawienia.")
+                    return self.status
                 version = await self.browser_json("/json/version")
                 data = await self.cdp(version["webSocketDebuggerUrl"], "Storage.getCookies")
                 content = netscape(data["cookies"])
@@ -127,8 +138,8 @@ async def background(app):
 
 async def resources(app):
     async with ClientSession(timeout=ClientTimeout(total=30)) as client:
-        options = json.loads(Path("/data/options.json").read_text())
-        app["manager"] = SessionManager(client, options)
+        options = read_options()
+        app["manager"] = SessionManager(client, options, Path("/data/options.json"))
         yield
 
 

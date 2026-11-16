@@ -1,20 +1,21 @@
 """Launch an isolated, persistent browser desktop and session worker."""
 import os
-import json
 from pathlib import Path
 import shutil
 import signal
 import subprocess
 import time
+from settings import read_options, valid_email
 
 os.umask(0o077)
 
 
 def main():
-    options = json.loads(Path("/data/options.json").read_text())
-    email = options.get("email", "").strip()
-    if "@" not in email or any(c in email for c in "\r\n\t"):
-        raise RuntimeError("Set your Google account email in add-on configuration first")
+    options = read_options()
+    if not valid_email(options["email"]):
+        print("Google Maps Session: email setting is empty or invalid; desktop will start. Save email in add-on Configuration.", flush=True)
+    else:
+        print("Google Maps Session: saved email setting accepted; starting desktop.", flush=True)
     profile = Path("/data/profile")
     profile.mkdir(exist_ok=True)
     os.chmod("/data", 0o711)
