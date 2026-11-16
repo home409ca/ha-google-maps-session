@@ -43,9 +43,10 @@ Nie trzeba ręcznie kopiować dodatku do `/addons`, uruchamiać GitHub Actions a
 
 ## Status
 
-Wersja **0.1.3 — eksperymentalna**. Przeszło 15 testów offline oraz kontrola składni i struktury paczki. Nie wykonano jeszcze budowy Docker ani testu logowania Google na działającym HA. Google może wymagać ponownego zatwierdzenia logowania; dodatek nie omija jego zabezpieczeń.
+Wersja **0.2.0 — eksperymentalna**. Przeszło 16 testów offline oraz kontrola składni i struktury paczki. Nie wykonano jeszcze budowy Docker ani testu logowania Google na działającym HA. Google może wymagać ponownego zatwierdzenia logowania; dodatek nie omija jego zabezpieczeń.
 
 Repozytorium przygotowano zgodnie z [układem repozytoriów dodatków HA](https://contributors.home-assistant.io/apps/guides/repository/).
+
 
 
 

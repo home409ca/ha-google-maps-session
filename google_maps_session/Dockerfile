@@ -1,8 +1,8 @@
 FROM debian:bookworm-slim
 ENV DEBIAN_FRONTEND=noninteractive DISPLAY=:0 PYTHONUNBUFFERED=1
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    chromium xvfb x11vnc novnc websockify nginx python3 python3-venv \
-    ca-certificates fonts-dejavu-core fonts-noto-color-emoji util-linux \
+    chromium tigervnc-standalone-server novnc websockify nginx python3 python3-venv \
+    ca-certificates fonts-dejavu-core fonts-noto-color-emoji xfonts-base util-linux \
     && rm -rf /var/lib/apt/lists/* \
     && useradd -m -u 1000 browser \
     && python3 -m venv /opt/venv \

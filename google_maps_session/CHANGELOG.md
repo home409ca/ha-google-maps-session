@@ -1,5 +1,12 @@
 # Historia zmian
 
+## 0.2.0
+
+- Zastąpienie Xvfb i x11vnc jednym serwerem Xtigervnc (TigerVNC), który tworzy ekran i obsługuje VNC.
+- Sprawdzenie powitania protokołu RFB przy starcie zamiast samego otwarcia portu TCP.
+- Diagnostyka rozróżnia brak połączenia TCP od braku odpowiedzi na otwartym połączeniu.
+- Profil Chromium i dane logowania zachowane w dotychczasowym katalogu.
+
 ## 0.1.3
 
 - Serwer VNC używa jawnie adresu IPv4 127.0.0.1 zgodnego z adresem mostu WebSocket.

@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import sys
 import socket
+import threading
 import tempfile
 from types import SimpleNamespace, ModuleType
 import unittest
@@ -16,7 +17,7 @@ sys.path.insert(0, str(ROOT / "google_maps_session" / "app"))
 from cookies import netscape, atomic_write
 from server import SessionManager
 from settings import valid_email, read_options
-from run import wait_for_port
+from run import wait_for_vnc
 
 spec = importlib.util.spec_from_file_location("bridge_sync", ROOT / "google_maps_session/bridge/sync.py")
 bridge = importlib.util.module_from_spec(spec)
@@ -29,15 +30,29 @@ def cookie(**kwargs):
 
 
 class CookieTests(unittest.TestCase):
-    def test_startup_detects_listening_port(self):
+    def test_startup_requires_actual_rfb_greeting(self):
         with socket.socket() as listener:
             listener.bind(("127.0.0.1", 0))
             listener.listen()
-            self.assertTrue(wait_for_port(listener.getsockname()[1], timeout=1))
+            def serve():
+                with listener.accept()[0] as connection:
+                    connection.sendall(b"RFB 003.")
+                    connection.sendall(b"008\n")
+            worker = threading.Thread(target=serve, daemon=True)
+            worker.start()
+            try:
+                self.assertTrue(wait_for_vnc(listener.getsockname()[1], timeout=1))
+            finally:
+                worker.join(timeout=2)
+
+    def test_open_port_without_rfb_greeting_is_not_ready(self):
+        with patch("run.socket.create_connection") as connect:
+            connect.return_value.__enter__.return_value.recv.return_value = b""
+            self.assertFalse(wait_for_vnc(5900, timeout=0.01))
 
     def test_startup_does_not_report_unavailable_port_as_ready(self):
         with patch("run.socket.create_connection", side_effect=ConnectionRefusedError):
-            self.assertFalse(wait_for_port(5900, timeout=0.01))
+            self.assertFalse(wait_for_vnc(5900, timeout=0.01))
 
     def test_email_validation(self):
         self.assertTrue(valid_email("  user@example.com  "))

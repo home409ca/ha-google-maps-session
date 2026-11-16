@@ -157,20 +157,22 @@ async def desktop_diagnostics(client):
     try:
         async with asyncio.timeout(5):
             reader, writer = await asyncio.open_connection("127.0.0.1", 5900)
+            result["VNC"] = "Port otwarty, brak powitania RFB"
             result["VNC"] = "OK" if (await reader.readexactly(12)).startswith(b"RFB ") else "Nieprawidłowa odpowiedź"
     except Exception:
-        result["VNC"] = "Brak połączenia"
+        result.setdefault("VNC", "Brak połączenia TCP")
     finally:
         if writer is not None:
             writer.close()
             await writer.wait_closed()
     try:
         async with client.ws_connect("http://127.0.0.1:6080/websockify", protocols=["binary"]) as ws:
+            result["WebSocket"] = "Połączenie otwarte, brak danych VNC"
             async with asyncio.timeout(5):
                 message = await ws.receive()
                 result["WebSocket"] = "OK" if message.type == web.WSMsgType.BINARY and message.data.startswith(b"RFB ") else "Brak odpowiedzi VNC"
     except Exception:
-        result["WebSocket"] = "Brak połączenia"
+        result.setdefault("WebSocket", "Brak połączenia WebSocket")
     try:
         async with client.get("http://127.0.0.1:9222/json/version") as response:
             result["Chromium"] = "OK" if response.status == 200 else "Błąd"
