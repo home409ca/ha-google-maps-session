@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="pl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sesja Google Maps</title>
+<style>
+body{margin:0;background:#111827;color:#e5e7eb;font:16px system-ui}header{padding:18px 24px}h1{font-size:24px;margin:0 0 12px}p{margin:8px 0}button{background:#60a5fa;color:#111827;border:0;border-radius:8px;padding:12px 18px;font:inherit;cursor:pointer}button:disabled{opacity:.5}small{color:#cbd5e1}iframe{display:block;width:100%;height:78vh;border:0;background:#fff}#state{font-weight:600}
+</style>
+<header><h1>Sesja Google Maps</h1>
+<p id="state" role="status" aria-live="polite">Łączenie…</p><p id="account"></p>
+<p><small>Zaloguj tylko wskazane konto. Nie wylogowuj go po zakończeniu. Nie zapisuj hasła w przeglądarce. Profil pozostaje w dodatku po zamknięciu panelu.</small></p>
+<p><button id="sync">Przekaż sesję teraz</button> <small id="last"></small></p>
+</header><iframe id="desktop" title="Przeglądarka Google" allow="clipboard-read; clipboard-write"></iframe>
+<script>
+const base=new URL('.',location.href);
+const wsPath=base.pathname+'browser/websockify';
+document.querySelector('#desktop').src=new URL('browser/vnc.html',base)+'?autoconnect=1&resize=scale&path='+encodeURIComponent(wsPath.replace(/^\//,''));
+function show(s){document.querySelector('#state').textContent=s.message;document.querySelector('#account').textContent='Konto: '+s.email;document.querySelector('#last').textContent=s.last_success?'Ostatnia synchronizacja: '+new Date(s.last_success*1000).toLocaleString():'';}
+async function update(){try{const r=await fetch(new URL('status',base));if(!r.ok)throw Error();show(await r.json());}catch{document.querySelector('#state').textContent='Brak połączenia z dodatkiem.';}}
+document.querySelector('#sync').onclick=async function(){this.disabled=true;try{const r=await fetch(new URL('sync',base),{method:'POST',headers:{'Content-Type':'application/json','X-Requested-With':'GoogleMapsSession'},body:'{}'});if(!r.ok)throw Error();show(await r.json());}catch{document.querySelector('#state').textContent='Przekazanie sesji nie powiodło się.';}finally{this.disabled=false;}};
+update();setInterval(update,10000);
+</script></html>

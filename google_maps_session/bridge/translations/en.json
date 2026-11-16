@@ -1,0 +1,11 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Google Maps Session Bridge",
+        "description": "Connect the Google Maps Session add-on to pnbruckner's Google Maps integration. Use one Google account in the add-on browser, matching the email in add-on configuration."
+      }
+    },
+    "abort": {"already_configured": "The bridge is already configured."}
+  }
+}
