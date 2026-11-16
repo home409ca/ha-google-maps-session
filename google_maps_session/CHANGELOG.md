@@ -1,5 +1,11 @@
 # Historia zmian
 
+## 0.2.1
+
+- Integracja Bridge w standardowym katalogu custom_components, gotowa do instalacji przez HACS.
+- Plik hacs.json i kompletne metadane integracji dla repozytorium home409ca/ha-google-maps-session.
+- Dodatek zachowuje istniejące pliki Bridge zamiast nadpisywać wersję zarządzaną przez HACS.
+
 ## 0.2.0
 
 - Zastąpienie Xvfb i x11vnc jednym serwerem Xtigervnc (TigerVNC), który tworzy ekran i obsługuje VNC.

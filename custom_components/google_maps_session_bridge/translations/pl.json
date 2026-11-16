@@ -1,0 +1,11 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Google Maps Session Bridge",
+        "description": "Połącz dodatek Google Maps Session z integracją Google Maps autora pnbruckner. W przeglądarce dodatku używaj tylko jednego konta Google, zgodnego z adresem w konfiguracji dodatku."
+      }
+    },
+    "abort": {"already_configured": "Moduł łączący jest już skonfigurowany."}
+  }
+}

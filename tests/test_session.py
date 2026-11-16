@@ -17,7 +17,7 @@ sys.path.insert(0, str(ROOT / "google_maps_session" / "app"))
 from cookies import netscape, atomic_write
 from server import SessionManager
 from settings import valid_email, read_options
-from run import wait_for_vnc
+from run import wait_for_vnc, install_bridge
 
 spec = importlib.util.spec_from_file_location("bridge_sync", ROOT / "google_maps_session/bridge/sync.py")
 bridge = importlib.util.module_from_spec(spec)
@@ -30,6 +30,21 @@ def cookie(**kwargs):
 
 
 class CookieTests(unittest.TestCase):
+    def test_addon_preserves_hacs_managed_bridge(self):
+        with tempfile.TemporaryDirectory() as temp:
+            destination = Path(temp)/"installed"
+            destination.mkdir()
+            (destination/"manifest.json").write_text('{"version":"9.0.0"}')
+            self.assertFalse(install_bridge(ROOT/"google_maps_session/bridge", destination))
+            self.assertEqual(json.loads((destination/"manifest.json").read_text())["version"], "9.0.0")
+
+    def test_addon_can_bootstrap_missing_bridge(self):
+        with tempfile.TemporaryDirectory() as temp:
+            destination = Path(temp)/"installed"
+            self.assertTrue(install_bridge(ROOT/"google_maps_session/bridge", destination))
+            self.assertTrue((destination/"config_flow.py").is_file())
+            self.assertTrue((destination/"translations/pl.json").is_file())
+            self.assertEqual((destination/"manifest.json").read_bytes(), (ROOT/"google_maps_session/bridge/manifest.json").read_bytes())
     def test_startup_requires_actual_rfb_greeting(self):
         with socket.socket() as listener:
             listener.bind(("127.0.0.1", 0))

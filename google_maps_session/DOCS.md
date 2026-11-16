@@ -1,6 +1,6 @@
 # Google Maps Session — dodatek do Home Assistant
 
-Wersja 0.2.0, eksperymentalna. Dodatek instalowany z repozytorium GitHub dodanego do sklepu HA. Obraz buduje się na urządzeniu HA; nie wymaga osobnego rejestru obrazów ani GitHub Actions.
+Wersja 0.2.1, eksperymentalna. Dodatek instalowany z repozytorium GitHub dodanego do sklepu HA. Obraz buduje się na urządzeniu HA; nie wymaga osobnego rejestru obrazów ani GitHub Actions.
 
 Logujesz się do Google w przeglądarce widocznej w panelu HA. Dodatek zachowuje jej profil i przekazuje ciasteczka do integracji pnbruckner/ha-google-maps. Nie trzeba pobierać ani wgrywać plików ciasteczek ręcznie. Hasło wpisujesz na stronie Google, nie w konfiguracji dodatku.
 
@@ -21,7 +21,7 @@ Adapter opracowano na podstawie kodu integracji 2.1.0, commit `ae85b249b354c25c2
 3. Zamknij okno repozytoriów i odśwież sklep. W sekcji **Google Maps Session — dodatki Home Assistant** znajdź **Google Maps Session**. Jeżeli sekcji nie widać, wybierz sprawdzenie aktualizacji sklepu i sprawdź, czy w głównym katalogu repozytorium jest plik `repository.yaml`.
 4. Otwórz **Google Maps Session → Zainstaluj**. Obraz buduje się na urządzeniu HA, więc pierwsza instalacja może potrwać kilka–kilkanaście minut.
 5. W konfiguracji dodatku ustaw **email** na adres konta Google, którego będziesz używać. Pozostałe opcje możesz zostawić domyślne. Zapisz i uruchom dodatek.
-6. Pierwszy start kopiuje mały moduł łączący do `/config/custom_components/google_maps_session_bridge` (w kontenerze dodatku ten sam katalog to `/homeassistant/custom_components/...`). **Uruchom ponownie Home Assistant Core**.
+6. Zalecana metoda instalacji Bridge to HACS: postępuj według [instrukcji w repozytorium](https://github.com/home409ca/ha-google-maps-session#instalacja-modulu-bridge-przez-hacs). Dodatek zachowuje istniejącą wersję modułu. Jeśli nie masz jeszcze żadnej wersji Bridge, pierwszy start kopiuje mały moduł łączący do `/config/custom_components/google_maps_session_bridge` (w kontenerze dodatku ten sam katalog to `/homeassistant/custom_components/...`). **Uruchom ponownie Home Assistant Core**.
 7. Przejdź do **Ustawienia → Urządzenia i usługi → Dodaj integrację**, wyszukaj **Google Maps Session Bridge** i zatwierdź. Jeśli nie widać nazwy, odśwież przeglądarkę po restarcie HA.
 8. Otwórz interfejs dodatku **Google Maps Session**. Możesz włączyć pokazywanie go na pasku bocznym. Zaloguj się w widocznym oknie Chromium i potwierdź logowanie na telefonie, jeśli Google o to poprosi.
 9. **Użyj tylko jednego konta Google w tej przeglądarce: dokładnie tego, które wpisałeś w konfiguracji.** Po zalogowaniu otwórz Mapy Google i naciśnij **Przekaż sesję teraz**. Jeśli potrzebujesz, wpisz `https://www.google.com/maps` w pasku adresu widocznej przeglądarki.

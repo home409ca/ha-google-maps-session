@@ -1,5 +1,6 @@
 name: Google Maps Session
-version: "0.2.0"
+version: "0.2.1"
+url: https://github.com/home409ca/ha-google-maps-session
 slug: google_maps_session
 description: Logowanie Google z panelu HA i synchronizacja sesji Google Maps
 arch: [amd64, aarch64]

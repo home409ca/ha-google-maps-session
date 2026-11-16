@@ -1,0 +1,10 @@
+sync:
+  name: Synchronize Google Maps session
+  description: Validate the add-on cookie export and update or create the Google Maps account.
+  fields:
+    email:
+      name: Google account email
+      required: true
+      selector:
+        text:
+          type: email
