@@ -1,5 +1,12 @@
 # Historia zmian
 
+## 0.1.3
+
+- Serwer VNC używa jawnie adresu IPv4 127.0.0.1 zgodnego z adresem mostu WebSocket.
+- Wyłączone mechanizmy X11 SHM i DAMAGE w serwerze VNC dla zgodności z kontenerem.
+- Oczekiwanie na start ekranu i portu VNC zamiast samego stałego opóźnienia.
+- Logi serwera ekranu, VNC, mostu WebSocket i panelu są widoczne w dzienniku dodatku; wyjście Chromium pozostaje ukryte.
+
 ## 0.1.2
 
 - Jawne ustawienie adresu i portu połączenia noVNC zapobiega używaniu ustawień zapamiętanych z innych dodatków HA.

@@ -3,14 +3,24 @@ import os
 from pathlib import Path
 import shutil
 import signal
+import socket
 import subprocess
 import time
 from settings import read_options, valid_email
 
-os.umask(0o077)
+def wait_for_port(port, timeout=20):
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        try:
+            with socket.create_connection(("127.0.0.1", port), timeout=0.5):
+                return True
+        except OSError:
+            time.sleep(0.2)
+    return False
 
 
 def main():
+    os.umask(0o077)
     options = read_options()
     if not valid_email(options["email"]):
         print("Google Maps Session: email setting is empty or invalid; desktop will start. Save email in add-on Configuration.", flush=True)
@@ -36,8 +46,8 @@ def main():
     # Local IPC only. The debugging port and VNC are never published.
     commands = [
         ["Xvfb", ":0", "-screen", "0", "1280x850x24", "-nolisten", "tcp", "-ac"],
-        ["x11vnc", "-display", ":0", "-localhost", "-rfbport", "5900", "-forever",
-         "-shared", "-nopw", "-quiet"],
+        ["x11vnc", "-display", ":0", "-listen", "127.0.0.1", "-no6",
+         "-rfbport", "5900", "-forever", "-shared", "-nopw", "-noshm", "-noxdamage"],
         ["websockify", "--web=/usr/share/novnc", "127.0.0.1:6080", "127.0.0.1:5900"],
         ["runuser", "-u", "browser", "--", "chromium", "--no-sandbox",
          "--disable-dev-shm-usage", "--no-first-run", "--no-default-browser-check",
@@ -58,11 +68,19 @@ def main():
     signal.signal(signal.SIGINT, stop)
     try:
         for command in commands:
-            # Browser/VNC output may contain private URLs: do not send it to HA logs.
+            # Keep browser URLs private; expose server diagnostics, not Chromium output.
+            visible = command[0] in ("Xvfb", "x11vnc", "websockify", "nginx") or command[0] == "/opt/venv/bin/python"
             processes.append(subprocess.Popen(command, start_new_session=True,
-                                               stdout=subprocess.DEVNULL,
-                                               stderr=subprocess.DEVNULL))
+                                               stdout=None if visible else subprocess.DEVNULL,
+                                               stderr=None if visible else subprocess.DEVNULL))
             time.sleep(0.8)
+            if command[0] == "Xvfb":
+                deadline = time.monotonic() + 10
+                while not Path("/tmp/.X11-unix/X0").exists() and time.monotonic() < deadline:
+                    time.sleep(0.2)
+            elif command[0] == "x11vnc":
+                ready = wait_for_port(5900)
+                print("Desktop startup: VNC " + ("listening on local port 5900" if ready else "NOT listening on local port 5900; inspect x11vnc output above"), flush=True)
         while not stopping:
             for command, process in zip(commands, processes):
                 if process.poll() is not None:

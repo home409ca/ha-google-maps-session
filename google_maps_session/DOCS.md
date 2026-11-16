@@ -1,6 +1,6 @@
 # Google Maps Session — dodatek do Home Assistant
 
-Wersja 0.1.2, eksperymentalna. Dodatek instalowany z repozytorium GitHub dodanego do sklepu HA. Obraz buduje się na urządzeniu HA; nie wymaga osobnego rejestru obrazów ani GitHub Actions.
+Wersja 0.1.3, eksperymentalna. Dodatek instalowany z repozytorium GitHub dodanego do sklepu HA. Obraz buduje się na urządzeniu HA; nie wymaga osobnego rejestru obrazów ani GitHub Actions.
 
 Logujesz się do Google w przeglądarce widocznej w panelu HA. Dodatek zachowuje jej profil i przekazuje ciasteczka do integracji pnbruckner/ha-google-maps. Nie trzeba pobierać ani wgrywać plików ciasteczek ręcznie. Hasło wpisujesz na stronie Google, nie w konfiguracji dodatku.
 
@@ -75,5 +75,6 @@ Kod integracji źródłowej: https://github.com/pnbruckner/ha-google-maps
 Konfiguracja dodatków HA: https://contributors.home-assistant.io/apps/reference/configuration/
 
 Interfejs przeglądarki CDP: https://chromedevtools.github.io/devtools-protocol/tot/Storage/
+
 
 
