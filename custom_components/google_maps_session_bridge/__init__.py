@@ -6,7 +6,7 @@ import voluptuous as vol
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.service import async_register_admin_service
 
-from .sync import synchronize
+from .sync import SessionTransferError, synchronize
 
 DOMAIN = "google_maps_session_bridge"
 _LOGGER = logging.getLogger(__name__)
@@ -19,6 +19,9 @@ async def async_setup_entry(hass, entry):
         async with lock:
             try:
                 await synchronize(hass, call.data["email"].strip())
+            except SessionTransferError as err:
+                _LOGGER.warning("Session transfer failed [%s]: %s", err.code, err)
+                raise HomeAssistantError(str(err)) from None
             except Exception as err:
                 # Google/requests exceptions may contain private data: log type only.
                 _LOGGER.warning("Session transfer failed (%s)", type(err).__name__)

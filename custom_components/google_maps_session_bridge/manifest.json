@@ -1,7 +1,7 @@
 {
   "domain": "google_maps_session_bridge",
   "name": "Google Maps Session Bridge",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "config_flow": true,
   "dependencies": ["google_maps"],
   "codeowners": ["@home409ca"],

@@ -72,6 +72,28 @@ Dodatek buduje obraz na urządzeniu HA. Wymaga HA z Supervisorem, Core 2026.7 lu
 
 Po dodaniu Bridge w **Narzędzia deweloperskie → Akcje** powinna być dostępna akcja `google_maps_session_bridge.sync`. Jej obecność potwierdza uruchomienie modułu. Przy nieudanym przekazaniu sesji sprawdź **Ustawienia → System → Dzienniki → Home Assistant Core** i wpisy `google_maps_session_bridge`.
 
-Wersja **0.2.1 — eksperymentalna**. Testy offline i lokalna kontrola plików nie zastępują instalacji na działającym HA. W dotychczasowym teście użytkownika przeglądarka i logowanie Google działały; pełne przekazanie sesji po instalacji Bridge pozostaje do potwierdzenia. Google może zażądać ponownego logowania lub zatwierdzenia dostępu.
+Bridge **0.2.2**, dodatek **0.2.1** — wersje eksperymentalne. Testy offline i lokalna kontrola plików nie zastępują instalacji na działającym HA. W dotychczasowym teście użytkownika przeglądarka i logowanie Google działały; pełne przekazanie sesji po instalacji Bridge pozostaje do potwierdzenia. Google może zażądać ponownego logowania lub zatwierdzenia dostępu.
 
 Układ pakietu oparto na [wymaganiach integracji HACS](https://www.hacs.xyz/docs/publish/integration/). Bridge jest adapterem do konkretnej wersji zewnętrznej integracji, więc jej przyszłe zmiany mogą wymagać aktualizacji.
+
+## Diagnostyka Bridge 0.2.2
+
+Aktualizacja samej integracji przez HACS wymaga restartu Home Assistant Core, ale nie wymaga ponownego budowania dodatku ani usuwania profilu przeglądarki. Po wgraniu tej paczki do głównego katalogu repozytorium zaktualizuj / pobierz ponownie integrację w HACS. Jeśli HACS pokazuje poprzednią wersję, wybierz aktualizację informacji i pobranie z domyślnej gałęzi repozytorium.
+
+W Narzędzia deweloperskie → Akcje uruchom:
+
+```yaml
+action: google_maps_session_bridge.sync
+data:
+  email: home409ca@gmail.com
+```
+
+Akcja korzysta z ostatniego eksportu zapisanego przez dodatek. Aby użyć świeżej sesji, najpierw otwórz panel dodatku i kliknij Przekaż sesję teraz.
+
+Nowe błędy rozróżniają: brak eksportu (`export_missing`), brak ważnych wymaganych ciasteczek w pliku (`auth_cookie_missing`) oraz odrzucenie wczytanej sesji przez Google (`google_rejected_session`). W dzienniku podawany jest bezpieczny kod i wskazówka, bez wartości ciasteczek oraz odpowiedzi Google.
+
+Jeżeli sesja zostaje odrzucona, otwórz **wewnątrz przeglądarki dodatku** https://www.google.com/maps, sprawdź konto i ekran Udostępnianie lokalizacji. Dokończ ewentualne zgody lub potwierdzenia, a następnie ponów eksport z panelu dodatku. Samo wywołanie akcji HA nie odświeża eksportu z przeglądarki.
+
+Wersje źródłowe Google Maps 2.0.3 i 2.1.0 mają ten sam używany przez adapter format konfiguracji v3 i metody wczytywania ciasteczek. Sam numer 2.0.3 nie przesądza o przyczynie InvalidCookies. Działanie sesji Google nadal wymaga potwierdzenia w realnej instalacji.
+
+Przeszło 20 testów offline, w tym rozróżnianie błędów wczytania ciasteczek od odrzucenia sesji przez Google i sprawdzenie, że dane z wyjątków nie trafiają do komunikatu użytkownika.
