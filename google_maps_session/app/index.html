@@ -7,12 +7,17 @@ body{margin:0;background:#111827;color:#e5e7eb;font:16px system-ui}header{paddin
 <header><h1>Sesja Google Maps</h1>
 <p id="state" role="status" aria-live="polite">Łączenie…</p><p id="account"></p>
 <p><small>Zaloguj tylko wskazane konto. Nie wylogowuj go po zakończeniu. Nie zapisuj hasła w przeglądarce. Profil pozostaje w dodatku po zamknięciu panelu.</small></p>
-<p><button id="sync">Przekaż sesję teraz</button> <small id="last"></small></p>
+<p><button id="sync">Przekaż sesję teraz</button> <button id="check">Sprawdź pulpit</button> <small id="last"></small></p>
+<p id="diagnostics" role="status"></p>
 </header><iframe id="desktop" title="Przeglądarka Google" allow="clipboard-read; clipboard-write"></iframe>
 <script>
-const base=new URL('.',location.href);
+const base=new URL(location.href);base.search='';base.hash='';if(!base.pathname.endsWith('/'))base.pathname+='/';
 const wsPath=base.pathname+'browser/websockify';
-document.querySelector('#desktop').src=new URL('browser/vnc.html',base)+'?autoconnect=1&resize=scale&path='+encodeURIComponent(wsPath.replace(/^\//,''));
+const desktopUrl=new URL('browser/vnc.html',base);
+// Explicit values override noVNC settings saved by other HA apps on this origin.
+desktopUrl.search=new URLSearchParams({autoconnect:'1',resize:'scale',host:location.hostname,port:location.port||(location.protocol==='https:'?'443':'80'),encrypt:location.protocol==='https:'?'1':'0',path:wsPath.replace(/^\//,''),reconnect:'1'}).toString();
+document.querySelector('#desktop').src=desktopUrl;
+document.querySelector('#check').onclick=async function(){this.disabled=true;try{const r=await fetch(new URL('diagnostics',base));if(!r.ok)throw Error();const d=await r.json();document.querySelector('#diagnostics').textContent=Object.entries(d).map(([k,v])=>k+': '+v).join(' | ');}catch{document.querySelector('#diagnostics').textContent='Nie można połączyć się z serwerem panelu.';}finally{this.disabled=false;}};
 function show(s){document.querySelector('#state').textContent=s.message;document.querySelector('#account').textContent='Konto: '+s.email;document.querySelector('#last').textContent=s.last_success?'Ostatnia synchronizacja: '+new Date(s.last_success*1000).toLocaleString():'';}
 async function update(){try{const r=await fetch(new URL('status',base));if(!r.ok)throw Error();show(await r.json());}catch{document.querySelector('#state').textContent='Brak połączenia z dodatkiem.';}}
 document.querySelector('#sync').onclick=async function(){this.disabled=true;try{const r=await fetch(new URL('sync',base),{method:'POST',headers:{'Content-Type':'application/json','X-Requested-With':'GoogleMapsSession'},body:'{}'});if(!r.ok)throw Error();show(await r.json());}catch{document.querySelector('#state').textContent='Przekazanie sesji nie powiodło się.';}finally{this.disabled=false;}};

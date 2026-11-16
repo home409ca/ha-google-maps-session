@@ -1,5 +1,11 @@
 # Historia zmian
 
+## 0.1.2
+
+- Jawne ustawienie adresu i portu połączenia noVNC zapobiega używaniu ustawień zapamiętanych z innych dodatków HA.
+- Poprawna obsługa adresu panelu bez końcowego ukośnika.
+- Przycisk „Sprawdź pulpit” sprawdza lokalny serwer VNC, most WebSocket i Chromium, a wyniki zapisuje też w logu.
+
 ## 0.1.1
 
 - Pusty lub nieprawidłowy email nie zatrzymuje już pulpitu noVNC.

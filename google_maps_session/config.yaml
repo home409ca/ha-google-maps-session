@@ -1,5 +1,5 @@
 name: Google Maps Session
-version: "0.1.1"
+version: "0.1.2"
 slug: google_maps_session
 description: Logowanie Google z panelu HA i synchronizacja sesji Google Maps
 arch: [amd64, aarch64]

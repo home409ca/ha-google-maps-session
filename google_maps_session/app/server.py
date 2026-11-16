@@ -151,6 +151,40 @@ async def status(request):
     return web.json_response(request.app["manager"].status, headers={"Cache-Control": "no-store"})
 
 
+async def desktop_diagnostics(client):
+    result = {}
+    writer = None
+    try:
+        async with asyncio.timeout(5):
+            reader, writer = await asyncio.open_connection("127.0.0.1", 5900)
+            result["VNC"] = "OK" if (await reader.readexactly(12)).startswith(b"RFB ") else "Nieprawidłowa odpowiedź"
+    except Exception:
+        result["VNC"] = "Brak połączenia"
+    finally:
+        if writer is not None:
+            writer.close()
+            await writer.wait_closed()
+    try:
+        async with client.ws_connect("http://127.0.0.1:6080/websockify", protocols=["binary"]) as ws:
+            async with asyncio.timeout(5):
+                message = await ws.receive()
+                result["WebSocket"] = "OK" if message.type == web.WSMsgType.BINARY and message.data.startswith(b"RFB ") else "Brak odpowiedzi VNC"
+    except Exception:
+        result["WebSocket"] = "Brak połączenia"
+    try:
+        async with client.get("http://127.0.0.1:9222/json/version") as response:
+            result["Chromium"] = "OK" if response.status == 200 else "Błąd"
+    except Exception:
+        result["Chromium"] = "Brak połączenia"
+    print("Desktop diagnostics: " + ", ".join(f"{key}={value}" for key, value in result.items()), flush=True)
+    return result
+
+
+async def diagnostics(request):
+    return web.json_response(await desktop_diagnostics(request.app["manager"].client),
+                             headers={"Cache-Control": "no-store"})
+
+
 async def sync(request):
     if request.content_type != "application/json" or request.headers.get("X-Requested-With") != "GoogleMapsSession":
         raise web.HTTPForbidden()
@@ -160,5 +194,5 @@ async def sync(request):
 if __name__ == "__main__":
     app = web.Application(client_max_size=1024)
     app.cleanup_ctx.extend([resources, background])
-    app.add_routes([web.get("/", index), web.get("/status", status), web.post("/sync", sync)])
+    app.add_routes([web.get("/", index), web.get("/status", status), web.get("/diagnostics", diagnostics), web.post("/sync", sync)])
     web.run_app(app, host="127.0.0.1", port=8098, access_log=None)
